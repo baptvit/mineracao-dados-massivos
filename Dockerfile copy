@@ -56,7 +56,13 @@ COPY apps/ apps/
 WORKDIR /opt/spark/apps
 
 RUN poetry lock
-RUN poetry install --all-extras
+RUN poetry install
 RUN poetry build
+
+# # Install HUDI 3.4 - 0.14
+# RUN wget -O hudi-spark3.4-bundle_2.12-0.14.1.jar https://repo1.maven.org/maven2/org/apache/hudi/hudi-spark3.4-bundle_2.12/0.14.1/hudi-spark3.4-bundle_2.12-0.14.1.jar
+
+# # Copy Hudi JAR to Spark lib directory
+# RUN mv hudi-spark3.4-bundle_2.12-0.14.1.jar /opt/spark/jars/
 
 CMD ["/bin/bash", "/start-spark.sh"]

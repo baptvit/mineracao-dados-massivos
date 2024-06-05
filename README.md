@@ -92,3 +92,17 @@ We encourage contributions to this project. Feel free to submit pull requests to
 **License:**
 
 This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
+
+
+Using HUDI
+# For Spark versions: 3.2 - 3.4
+```bash
+export PYSPARK_PYTHON=$(which python3)
+export SPARK_VERSION=3.4
+pyspark 
+--packages org.apache.hudi:hudi-spark$SPARK_VERSION-bundle_2.12:0.14.1 \
+--conf 'spark.serializer=org.apache.spark.serializer.KryoSerializer' \
+--conf 'spark.sql.catalog.spark_catalog=org.apache.spark.sql.hudi.catalog.HoodieCatalog' \
+--conf 'spark.sql.extensions=org.apache.spark.sql.hudi.HoodieSparkSessionExtension' \
+--conf 'spark.kryo.registrator=org.apache.spark.HoodieSparkKryoRegistrar'
+```
