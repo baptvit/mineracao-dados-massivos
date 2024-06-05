@@ -2,7 +2,9 @@ from pyspark.sql import SparkSession, DataFrame
 
 from pyspark.sql.types import Row
 
-from spark_apps.data_transformations.med_qa.question_answering.question_answering_transformer import preproccess_question_answering
+from spark_apps.data_transformations.med_qa.question_answering.question_answering_transformer import (
+    preproccess_question_answering,
+)
 from tests import SPARK
 
 
@@ -145,7 +147,7 @@ SAMPLE_DATA = [
 def test_should_maintain_all_data_it_reads() -> None:
     spark: SparkSession = SPARK
     df: DataFrame = spark.createDataFrame(SAMPLE_DATA)
-    preproccess_question_answering(spark, df)
-
+    df = preproccess_question_answering(spark, df)
+    breakpoint()
     assert len(df.columns) == 5
     assert df.count() == 10
