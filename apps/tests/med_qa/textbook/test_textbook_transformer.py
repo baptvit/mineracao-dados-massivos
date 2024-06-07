@@ -31,6 +31,6 @@ def test_mock_data_textbook() -> None:
     spark: SparkSession = SPARK
     df: DataFrame = spark.createDataFrame(SAMPLE_DATA)
     preproccess_textbook(spark, df)
-
+    breakpoint()
     assert len(df.columns) == 1
     assert df.count() == 10

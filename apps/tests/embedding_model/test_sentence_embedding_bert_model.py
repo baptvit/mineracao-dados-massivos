@@ -17,7 +17,7 @@ class BertSentenceEmbedding:
 
         # Set a random seed for PyTorch (for GPU as well)
         torch.manual_seed(random_seed)
-        
+
         if torch.cuda.is_available():
             torch.cuda.manual_seed_all(random_seed)
 
@@ -27,7 +27,7 @@ class BertSentenceEmbedding:
         self.model = BertModel.from_pretrained(self.model_name)
 
     def preprocess(self, row) -> Dict[str, Any]:
-        #row: Dict[str, Any] = row.asDict()
+        # row: Dict[str, Any] = row.asDict()
         question = row.get("question")
         answer = row.get("answer")
         options = row.get("options")
@@ -70,15 +70,15 @@ class BertSentenceEmbedding:
         sentence_embedding = self.embed(encoding)
         return sentence_embedding
 
-#def test_bard_embedding() -> None:
+
+# def test_bard_embedding() -> None:
 
 text = {
-        "question": "Hello worl is?",
-        "answer": "very cool.",
-        "options": "very cool, very sad, very sorry or not cool."
-    }
-    
+    "question": "Hello worl is?",
+    "answer": "very cool.",
+    "options": "very cool, very sad, very sorry or not cool.",
+}
+
 model = BertSentenceEmbedding()
 embedding = model.bert_embedding_sentece(text)
 breakpoint()
-

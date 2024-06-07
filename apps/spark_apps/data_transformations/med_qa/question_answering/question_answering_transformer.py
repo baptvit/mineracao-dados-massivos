@@ -1,51 +1,75 @@
-from typing import Any, Dict
 from pyspark.sql import SparkSession, DataFrame
-from pyspark.sql.functions import udf, expr, col, array, struct
-from pyspark.sql.types import ArrayType, DoubleType, StringType
+from pyspark.sql.functions import udf, col, concat, lit
+from pyspark.sql.types import ArrayType, DoubleType
 
 from spark_apps.data_transformations.embedding_model.sentence_embedding_bert_model import (
     BertSentenceEmbedding,
 )
+from spark_apps.data_transformations.embedding_model.sentence_embedding_model import (
+    SentenceEmbeddingModel,
+)
 
-def transform_options(options_row: Dict[str, Any]):
-  """
-  Transforms a Row object containing options (answer choices) into a single sentence.
 
-  Args:
-      options_row: A Row object with named fields representing answer choices.
+def transform_options(dataframe: DataFrame) -> DataFrame:
+    """
+    Transforms a Row object containing options (answer choices) into a single sentence.
 
-  Returns:
-      A string containing all options separated by commas and joined with "or".
-  """
-  # Extract option values using element extraction
-  options = [col(field_name) for field_name in options_row.asDict()]
-  # Concatenate options with commas and join with "or" using CONCAT_WS and expr
-  return expr("concat_ws(',', ", array(*options), ") OR ")
+    Args:
+        options_row: A Row object with named fields representing answer choices.
 
-def preproccess_question_answering(
-    _spark: SparkSession, dataframe: DataFrame
-) -> DataFrame:
-
-    # Define a UDF (User Defined Function) to extract options as a sentence
-    extract_options_udf = udf(lambda row: ", ".join(row.asDict().values()), StringType())
-
-    # Apply the UDF to the "text_dict" column to create a new column "options_text"
-    dataframe = dataframe.withColumn("options", extract_options_udf(dataframe["options"]))
-    
-    #dataframe = dataframe.withColumn("options_text", transform_options(col("options")))
-
-    # pipeline = SentenceEmbeddingPipeline(BertSentenceEmbedding)
-
-    model = BertSentenceEmbedding()
-    # preprocess_udf = udf(lambda row: model.preprocess(row), StringType())
-    embed_udf = udf(
-        lambda row: model.bert_embedding_sentece(row), ArrayType(ArrayType(DoubleType()))
+    Returns:
+        A string containing all options separated by commas and joined with "or".
+    """
+    return dataframe.withColumn(
+        "options_sentence",
+        concat(
+            dataframe.options.getField("A"),
+            lit(", "),
+            dataframe.options.getField("B"),
+            lit(", "),
+            dataframe.options.getField("C"),
+            lit(", "),
+            dataframe.options.getField("D"),
+            lit(" or "),
+            dataframe.options.getField("E"),
+        ),
     )
 
-    dataframe = dataframe.withColumn("embedding_sentence", embed_udf(struct([dataframe[x] for x in dataframe.columns])))
+
+def create_sentece(dataframe: DataFrame) -> DataFrame:
+    return dataframe.withColumn(
+        "sentence",
+        concat(
+            lit("The questions is: "),
+            col("question"),
+            lit(", Given the options: "),
+            col("options_sentence"),
+            lit(", The answer is: "),
+            col("answer"),
+        ),
+    )
+
+
+def preproccess_question_answering(
+    _: SparkSession,
+    dataframe: DataFrame,
+    model: SentenceEmbeddingModel = BertSentenceEmbedding(),
+) -> DataFrame:
+
+    dataframe = transform_options(dataframe)
+    dataframe = create_sentece(dataframe)
+
+    embed_sentece_udf = udf(
+        lambda sentence: model.get_sentence_embedding(sentence),
+        ArrayType(ArrayType(DoubleType())),
+    )
+
+    dataframe = dataframe.withColumn(
+        "embedding_sentence", embed_sentece_udf("sentence")
+    )
 
     # Use the "embedding" column for further analysis
-    dataframe.select("embedding_sentence").show(truncate=False)
+    dataframe.select("embedding_sentence").show()
 
     return dataframe
 
