@@ -20,6 +20,9 @@ def preproccess_textbook(
         ArrayType(ArrayType(DoubleType())),
     )
 
+    dataframe = dataframe.filter(col("value") != "")
+    dataframe = dataframe.withColumnRenamed("value", col("sentence"))
+    breakpoint()
     dataframe = dataframe.withColumn(
         "embedding_sentence", embed_sentece_udf("sentence")
     )
