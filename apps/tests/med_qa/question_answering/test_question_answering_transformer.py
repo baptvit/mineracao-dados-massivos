@@ -1,12 +1,11 @@
+import os
+import shutil
 from pyspark.sql import SparkSession, DataFrame
 
 from pyspark.sql.types import Row
 
-from spark_apps.data_transformations.embedding_model.sentence_embedding_bert_model import (
-    BertSentenceEmbedding,
-)
 from spark_apps.data_transformations.med_qa.question_answering.question_answering_transformer import (
-    preproccess_question_answering,
+    run
 )
 from tests import SPARK
 
@@ -147,9 +146,21 @@ SAMPLE_DATA = [
 ]
 
 
-def test_should_maintain_all_data_it_reads() -> None:
-    spark: SparkSession = SPARK
+def test_run_question_answering_hudi() -> None:
+    input_question_answering_path = "tmp/mock_question_answering"
+    transformed_dataset_path = "tmp/transformed_dataset_path"
+    spark: SparkSession = SparkSession(SPARK)
+
     df: DataFrame = spark.createDataFrame(SAMPLE_DATA)
-    df = preproccess_question_answering(spark, df)
-    assert len(df.columns) == 5
-    assert df.count() == 10
+    df.repartition(1).write.mode("overwrite").json(input_question_answering_path, lineSep="\n")
+
+    run(spark, input_question_answering_path, transformed_dataset_path)
+
+    df_transformed = spark.read.format("hudi").load(
+        f"file:///{os.path.abspath(transformed_dataset_path)}"
+    )
+    assert len(df_transformed.columns) == 7
+    assert df_transformed.count() == 10
+
+    shutil.rmtree("tmp/")
+

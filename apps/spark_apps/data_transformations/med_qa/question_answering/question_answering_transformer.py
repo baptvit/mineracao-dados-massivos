@@ -1,3 +1,4 @@
+import os
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.functions import udf, col, concat, lit
 from pyspark.sql.types import ArrayType, DoubleType
@@ -69,19 +70,35 @@ def preproccess_question_answering(
     )
 
     # Use the "embedding" column for further analysis
-    dataframe.select("embedding_sentence").show()
+    dataframe.select("sentence", "embedding_sentence")
 
-    return dataframe
+    return dataframe.select("sentence", "embedding_sentence")
 
 
 def run(
     spark: SparkSession, input_dataset_path: str, transformed_dataset_path: str
 ) -> None:
-    # TO DO: Still peding implementation
-    input_dataset = spark.read.parquet(input_dataset_path)
+    input_dataset = spark.read.json(input_dataset_path)
+    input_dataset.cache()
     input_dataset.show()
 
-    dataset_with_distances = preproccess_question_answering(spark, input_dataset)
-    dataset_with_distances.show()
+    dataset_transformer = preproccess_question_answering(spark, input_dataset)
+    dataset_transformer.cache()
+    dataset_transformer.show()
 
-    dataset_with_distances.write.parquet(transformed_dataset_path, mode="append")
+    hudi_options = {
+        "hoodie.table.name": "question_answering_pre_proccess",
+        "hoodie.datasource.write.hive_style_partitioning": "true",
+        "hoodie.datasource.write.table.name": "question_answering_pre_proccess",
+        "hoodie.upsert.shuffle.parallelism": 1,
+        "hoodie.insert.shuffle.parallelism": 1,
+        "hoodie.consistency.check.enabled": True,
+        "hoodie.index.type": "BLOOM",
+        "hoodie.index.bloom.num_entries": 60000,
+        "hoodie.index.bloom.fpp": 0.000000001,
+        "hoodie.cleaner.commits.retained": 2,
+    }
+
+    dataset_transformer.write.format("hudi").options(**hudi_options).mode(
+        "overwrite"
+    ).save(f"file:///{os.path.abspath(transformed_dataset_path)}")

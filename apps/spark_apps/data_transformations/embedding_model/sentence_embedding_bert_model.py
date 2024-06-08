@@ -58,9 +58,9 @@ class BertSentenceEmbedding(SentenceEmbeddingModel):
         # Option 3: Pooled output (concatenate)
         # sentence_embedding = torch.cat((outputs[0][:, 0], torch.mean(outputs[0], dim=1)), dim=1)
 
-        print(f"Sentence Embeddings: {sentence_embedding}")
+        # print(f"Sentence Embeddings: {sentence_embedding}")
         print(f"Shape of Sentence Embeddings: {sentence_embedding.shape}")
         return sentence_embedding.tolist()
 
-    def get_sentence_embedding(self, sentece: str) -> List[float]:
-        return self.bert_sentence_embedding(sentece)
+    def get_sentence_embedding(self, sentence: str) -> List[float]:
+        return self.bert_sentence_embedding(sentence)
