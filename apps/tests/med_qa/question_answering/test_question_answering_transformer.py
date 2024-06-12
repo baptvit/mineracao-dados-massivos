@@ -5,7 +5,7 @@ from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.types import Row
 
 from spark_apps.data_transformations.med_qa.question_answering.question_answering_transformer import (
-    run
+    run,
 )
 from tests import SPARK
 
@@ -146,21 +146,22 @@ SAMPLE_DATA = [
 ]
 
 
-def test_run_question_answering_hudi() -> None:
+def test_run_question_answering_delta() -> None:
     input_question_answering_path = "tmp/mock_question_answering"
     transformed_dataset_path = "tmp/transformed_dataset_path"
     spark: SparkSession = SparkSession(SPARK)
 
     df: DataFrame = spark.createDataFrame(SAMPLE_DATA)
-    df.repartition(1).write.mode("overwrite").json(input_question_answering_path, lineSep="\n")
+    df.repartition(1).write.mode("overwrite").json(
+        input_question_answering_path, lineSep="\n"
+    )
 
     run(spark, input_question_answering_path, transformed_dataset_path)
 
-    df_transformed = spark.read.format("hudi").load(
+    df_transformed = spark.read.format("delta").load(
         f"file:///{os.path.abspath(transformed_dataset_path)}"
     )
-    assert len(df_transformed.columns) == 7
+    assert len(df_transformed.columns) == 3
     assert df_transformed.count() == 10
 
     shutil.rmtree("tmp/")
-
