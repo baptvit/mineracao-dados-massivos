@@ -26,7 +26,32 @@ SAMPLE_DATA = [
 ]
 
 
-def test_run_textbook_hudi() -> None:
+# SAMPLE_DATA = [
+#     {
+#         "value": "While memorizing terms is a part of anatomy, truly grasping it relies on observation and visualization. Anatomy is about understanding the connections –  it's not just a list of names. Knowing the names of the external carotid artery branches isn't the same as picturing the lingual artery's path from neck to tongue. Likewise, understanding the soft palate's structure, its relationship to the cavities, and its movement during swallowing goes beyond reciting muscle and nerve names. Anatomy is about seeing the bigger picture and using the terminology within that context."
+#     }
+# ]
+
+# def test_run_textbook_hudi() -> None:
+#     input_textbook_path = "tmp/mock_textbook"
+#     transformed_dataset_path = "tmp/transformed_dataset_path"
+#     spark: SparkSession = SparkSession(SPARK)
+
+#     df: DataFrame = spark.createDataFrame(SAMPLE_DATA)
+#     df.write.mode("overwrite").text(input_textbook_path)
+
+#     run(spark, input_textbook_path, transformed_dataset_path)
+
+#     df_transformed = spark.read.format("hudi").load(
+#         f"file:///{os.path.abspath(transformed_dataset_path)}"
+#     )
+#     assert len(df_transformed.columns) == 7
+#     assert df_transformed.count() == 5
+
+#     shutil.rmtree("tmp/")
+
+
+def test_run_textbook_delta() -> None:
     input_textbook_path = "tmp/mock_textbook"
     transformed_dataset_path = "tmp/transformed_dataset_path"
     spark: SparkSession = SparkSession(SPARK)
@@ -36,10 +61,10 @@ def test_run_textbook_hudi() -> None:
 
     run(spark, input_textbook_path, transformed_dataset_path)
 
-    df_transformed = spark.read.format("hudi").load(
+    df_transformed = spark.read.format("delta").load(
         f"file:///{os.path.abspath(transformed_dataset_path)}"
     )
-    assert len(df_transformed.columns) == 7
+    assert len(df_transformed.columns) == 3
     assert df_transformed.count() == 5
 
     shutil.rmtree("tmp/")
