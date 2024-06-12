@@ -19,6 +19,8 @@ chromadb = "^0.5.0"
 transformers = "^4.41.2"
 torch = "^2.3.0"
 ipdb = "^0.13.13"
+delta = "^0.4.2"
+delta-spark = "^3.2.0"
 
 
 [tool.poetry.group.test.dependencies]

@@ -170,4 +170,6 @@ data/
 
 */jars
 
+*/tmp
+
 */spark-warehouse
