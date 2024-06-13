@@ -1,7 +1,5 @@
 import os
 from pyspark import SparkConf, SparkContext
-from pyspark.sql import SparkSession
-from delta import configure_spark_with_delta_pip
 
 # SUBMIT_ARGS = "--spark.jars /opt/spark/jars/hudi-spark3.4-bundle_2.12-0.14.1.jar pyspark"
 # os.environ["PYSPARK_SUBMIT_ARGS"] = SUBMIT_ARGS

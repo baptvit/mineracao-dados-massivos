@@ -67,4 +67,4 @@ def test_run_textbook_delta() -> None:
     assert len(df_transformed.columns) == 3
     assert df_transformed.count() == 5
 
-    shutil.rmtree("tmp/")
+    #shutil.rmtree("tmp/")
