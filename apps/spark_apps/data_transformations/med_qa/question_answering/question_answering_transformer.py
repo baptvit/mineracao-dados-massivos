@@ -1,7 +1,13 @@
 import os
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.functions import udf, col, concat, lit
-from pyspark.sql.types import ArrayType, DoubleType
+from pyspark.sql.types import (
+    ArrayType,
+    DoubleType,
+    IntegerType,
+    StructType,
+    StructField,
+)
 
 from spark_apps.data_transformations.embedding_model.sentence_embedding_bert_model import (
     BertSentenceEmbedding,
@@ -72,29 +78,52 @@ def preproccess_question_answering(
     dataframe = transform_metadata(dataframe)
     dataframe = transform_options(dataframe)
     dataframe = create_sentece(dataframe)
+    dataframe = dataframe.filter((col("sentence") != "") & (col("sentence").isNotNull()))
+
+    schema = StructType(
+        [
+            StructField(
+                "embedding_sentence", ArrayType(ArrayType(DoubleType())), False
+            ),
+            StructField("token_sentence", IntegerType(), False),
+        ]
+    )
 
     embed_sentece_udf = udf(
         lambda sentence: model.get_sentence_embedding(sentence),
-        ArrayType(ArrayType(DoubleType())),
+        schema,
     )
 
     dataframe = dataframe.withColumn(
-        "embedding_sentence", embed_sentece_udf("sentence")
+        "embedding_sentence_object", embed_sentece_udf("sentence")
     )
 
-    return dataframe.select("sentence", "embedding_sentence", "metadata")
+    dataframe = dataframe.withColumn(
+        "embedding_sentence",
+        dataframe["embedding_sentence_object"]
+        .getField("embedding_sentence")
+        .getItem(0),
+    ).withColumn(
+        "token_sentence",
+        dataframe["embedding_sentence_object"].getField("token_sentence"),
+    )
+
+    dataframe = dataframe.drop_duplicates()
+    return dataframe.select(
+        "sentence", "embedding_sentence", "token_sentence", "metadata"
+    )
 
 
 def run(
     spark: SparkSession, input_dataset_path: str, transformed_dataset_path: str
 ) -> None:
     input_dataset = spark.read.json(input_dataset_path).select("*", "_metadata")
-    input_dataset.cache()
-    input_dataset.show()
+    #input_dataset.cache()
+    #input_dataset.show()
 
     dataset_transformer = preproccess_question_answering(spark, input_dataset)
-    dataset_transformer.cache()
-    dataset_transformer.show()
+    #dataset_transformer.cache()
+    #dataset_transformer.show()
 
     # hudi_options = {
     #     "hoodie.table.name": "question_answering_pre_proccess",

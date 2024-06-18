@@ -161,7 +161,7 @@ def test_run_question_answering_delta() -> None:
     df_transformed = spark.read.format("delta").load(
         f"file:///{os.path.abspath(transformed_dataset_path)}"
     )
-    assert len(df_transformed.columns) == 3
+    assert len(df_transformed.columns) == 4
     assert df_transformed.count() == 10
 
     shutil.rmtree("tmp/")

@@ -30,10 +30,10 @@ conf = (
     SparkConf()
     .setMaster("local[*]")
     .setAppName("Delta Lake Spark Application")
-    .set("spark.driver.memory", "15g")
-    .set("spark.executor.memory", "15g")
+    .set("spark.driver.memory", "30g")
+    .set("spark.executor.memory", "30g")
     .set("spark.sql.warehouse.dir", "file:////opt/spark/apps/tmp")
-    .set("spark.jars", "/opt/spark/apps/jars/*")
+    .set("spark.jars", "file:////opt/spark/apps/jars/*")
     .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     .set(
         "spark.sql.catalog.spark_catalog",

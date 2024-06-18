@@ -106,3 +106,11 @@ pyspark
 --conf 'spark.sql.extensions=org.apache.spark.sql.hudi.HoodieSparkSessionExtension' \
 --conf 'spark.kryo.registrator=org.apache.spark.HoodieSparkKryoRegistrar'
 ```
+
+``` bash
+poetry export -f requirements.txt --without-hashes -o requirements.txt
+poetry run pip install . -r requirements.txt -t package_tmp
+cd package_tmp
+find . -name "*.pyc" -delete
+zip -r ../package .
+```

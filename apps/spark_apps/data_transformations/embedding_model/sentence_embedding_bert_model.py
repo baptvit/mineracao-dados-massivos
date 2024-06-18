@@ -1,6 +1,7 @@
 import torch
 import random
-from typing import Any, Dict, List
+import logging
+from typing import Any, Dict, List, Set
 from transformers import BertTokenizer, BertModel
 from spark_apps.data_transformations.embedding_model.sentence_embedding_model import (
     SentenceEmbeddingModel,
@@ -17,6 +18,8 @@ class BertSentenceEmbedding(SentenceEmbeddingModel):
         random_seed = 42
         random.seed(random_seed)
 
+        logging.basicConfig(filename="project_medqa.log", level=logging.INFO)
+
         # Set a random seed for PyTorch (for GPU as well)
         torch.manual_seed(random_seed)
 
@@ -29,7 +32,9 @@ class BertSentenceEmbedding(SentenceEmbeddingModel):
         self.model = BertModel.from_pretrained(self.model_name)
 
     def pre_process_sentece(self, sentece: str) -> Dict[str, Any]:
-        return self.tokenizer(
+        try:
+            print(sentece)
+            return self.tokenizer(
             sentece,  # List of input texts
             padding=True,  # Pad to the maximum sequence length
             truncation=True,  # Truncate to the maximum sequence length if necessary
@@ -37,11 +42,17 @@ class BertSentenceEmbedding(SentenceEmbeddingModel):
             add_special_tokens=True,  # Add special tokens CLS and SEP
             is_split_into_words=True,
         )
+        
+        except Exception as e:
+            logging.error(f"Problem in tokenize the sentence: {e} for sentece: {sentece}")
 
     def bert_sentence_embedding(self, setence: str) -> List[float]:
-        encoding = self.pre_process_sentece(setence)
+        sentence = setence if setence != "" or None else "mock value"
+        encoding = self.pre_process_sentece(sentence)
 
         input_ids = encoding["input_ids"]
+
+        token_count = encoding["input_ids"].shape[1]
 
         attention_mask = encoding["attention_mask"]
 
@@ -60,7 +71,11 @@ class BertSentenceEmbedding(SentenceEmbeddingModel):
 
         # print(f"Sentence Embeddings: {sentence_embedding}")
         print(f"Shape of Sentence Embeddings: {sentence_embedding.shape}")
-        return sentence_embedding.tolist()
+        print(token_count)
+        return {
+            "embedding_sentence": sentence_embedding.tolist(),
+            "token_sentence": token_count,
+        }
 
-    def get_sentence_embedding(self, sentence: str) -> List[float]:
+    def get_sentence_embedding(self, sentence: str) -> Dict[str, Any]:
         return self.bert_sentence_embedding(sentence)

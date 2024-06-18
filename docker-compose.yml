@@ -18,30 +18,37 @@ services:
     deploy:
       resources:
         limits:
-          cpus: 16
+          cpus: 15
           memory: 30G
-    # spark-worker-a:
-  #   image: apache-spark:3.4.0
-  #   ports:
-  #     - "9191:8080"
-  #     - "8086:8085"
-  #     - "7000:7000"
+
+  # spark-worker-a:
+  #     image: apache-spark:3.4.0
+  #     ports:
+  #       - "9191:8080"
+  #       - "8086:8085"
+  #       - "7000:7000"
+      
+  #     depends_on:
+  #       - spark-master
+  #     environment:
+  #       - SPARK_MASTER=spark://spark-master:7077
+  #       - SPARK_WORKER_CORES=4
+  #       - SPARK_WORKER_MEMORY=6G
+  #       - SPARK_DRIVER_MEMORY=3G
+  #       - SPARK_EXECUTOR_MEMORY=6G
+  #       - SPARK_WORKLOAD=worker
+  #       - SPARK_LOCAL_IP=spark-worker-a
+  #     volumes:
+  #       - ./apps:/opt/spark-apps
+  #       - ./data:/opt/spark-data
+  #     networks:
+  #       - network
+  #     deploy:
+  #       resources:
+  #         limits:
+  #           cpus: 3
+  #           memory: 6G
     
-  #   depends_on:
-  #     - spark-master
-  #   environment:
-  #     - SPARK_MASTER=spark://spark-master:7077
-  #     - SPARK_WORKER_CORES=2
-  #     - SPARK_WORKER_MEMORY=4G
-  #     - SPARK_DRIVER_MEMORY=2G
-  #     - SPARK_EXECUTOR_MEMORY=4G
-  #     - SPARK_WORKLOAD=worker
-  #     - SPARK_LOCAL_IP=spark-worker-a
-  #   volumes:
-  #      - ./apps:/opt/spark-apps
-  #      - ./data:/opt/spark-data
-  #   networks:
-  #      - network
   # spark-worker-b:
   #   image: apache-spark:3.4.0
   #   ports:
@@ -52,10 +59,10 @@ services:
   #     - spark-master
   #   environment:
   #     - SPARK_MASTER=spark://spark-master:7077
-  #     - SPARK_WORKER_CORES=2
-  #     - SPARK_WORKER_MEMORY=4G
-  #     - SPARK_DRIVER_MEMORY=2G
-  #     - SPARK_EXECUTOR_MEMORY=4G
+  #     - SPARK_WORKER_CORES=3
+  #     - SPARK_WORKER_MEMORY=6G
+  #     - SPARK_DRIVER_MEMORY=3G
+  #     - SPARK_EXECUTOR_MEMORY=6G
   #     - SPARK_WORKLOAD=worker
   #     - SPARK_LOCAL_IP=spark-worker-b
   #   volumes:
@@ -63,6 +70,12 @@ services:
   #       - ./data:/opt/spark-data
   #   networks:
   #      - network
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: 3
+  #         memory: 6G
+
   # spark-worker-c:
   #   image: apache-spark:3.4.0
   #   ports:
@@ -73,10 +86,10 @@ services:
   #     - spark-master
   #   environment:
   #     - SPARK_MASTER=spark://spark-master:7077
-  #     - SPARK_WORKER_CORES=2
-  #     - SPARK_WORKER_MEMORY=4G
-  #     - SPARK_DRIVER_MEMORY=2G
-  #     - SPARK_EXECUTOR_MEMORY=4G
+  #     - SPARK_WORKER_CORES=3
+  #     - SPARK_WORKER_MEMORY=6G
+  #     - SPARK_DRIVER_MEMORY=3G
+  #     - SPARK_EXECUTOR_MEMORY=6G
   #     - SPARK_WORKLOAD=worker
   #     - SPARK_LOCAL_IP=spark-worker-c
   #   volumes:
@@ -84,7 +97,92 @@ services:
   #       - ./data:/opt/spark-data
   #   networks:
   #      - network
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: 3
+  #         memory: 6G
 
+  # spark-worker-d:
+  #   image: apache-spark:3.4.0
+  #   ports:
+  #     - "9194:8080"
+  #     - "8089:8085"
+  #     - "7004:7000"
+  #   depends_on:
+  #     - spark-master
+  #   environment:
+  #     - SPARK_MASTER=spark://spark-master:7077
+  #     - SPARK_WORKER_CORES=3
+  #     - SPARK_WORKER_MEMORY=6G
+  #     - SPARK_DRIVER_MEMORY=3G
+  #     - SPARK_EXECUTOR_MEMORY=6G
+  #     - SPARK_WORKLOAD=worker
+  #     - SPARK_LOCAL_IP=spark-worker-d
+  #   volumes:
+  #       - ./apps:/opt/spark-apps
+  #       - ./data:/opt/spark-data
+  #   networks:
+  #      - network
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: 3
+  #         memory: 6G
+
+  # spark-worker-e:
+  #   image: apache-spark:3.4.0
+  #   ports:
+  #     - "9195:8080"
+  #     - "8090:8085"
+  #     - "7005:7000"
+  #   depends_on:
+  #     - spark-master
+  #   environment:
+  #     - SPARK_MASTER=spark://spark-master:7077
+  #     - SPARK_WORKER_CORES=3
+  #     - SPARK_WORKER_MEMORY=6G
+  #     - SPARK_DRIVER_MEMORY=3G
+  #     - SPARK_EXECUTOR_MEMORY=6G
+  #     - SPARK_WORKLOAD=worker
+  #     - SPARK_LOCAL_IP=spark-worker-e
+  #   volumes:
+  #       - ./apps:/opt/spark-apps
+  #       - ./data:/opt/spark-data
+  #   networks:
+  #      - network
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: 3
+  #         memory: 6G
+  
+  # spark-worker-f:
+  #   image: apache-spark:3.4.0
+  #   ports:
+  #     - "9196:8080"
+  #     - "8091:8085"
+  #     - "7006:7000"
+  #   depends_on:
+  #     - spark-master
+  #   environment:
+  #     - SPARK_MASTER=spark://spark-master:7077
+  #     - SPARK_WORKER_CORES=3
+  #     - SPARK_WORKER_MEMORY=4G
+  #     - SPARK_DRIVER_MEMORY=3G
+  #     - SPARK_EXECUTOR_MEMORY=4G
+  #     - SPARK_WORKLOAD=worker
+  #     - SPARK_LOCAL_IP=spark-worker-f
+  #   volumes:
+  #       - ./apps:/opt/spark-apps
+  #       - ./data:/opt/spark-data
+  #   networks:
+  #      - network
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: 3
+  #         memory: 4G
 networks:
   network:
     driver: bridge

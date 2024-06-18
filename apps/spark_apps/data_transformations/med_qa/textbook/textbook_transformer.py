@@ -1,6 +1,12 @@
 import os
 from pyspark.sql import SparkSession, DataFrame
-from pyspark.sql.types import ArrayType, DoubleType
+from pyspark.sql.types import (
+    ArrayType,
+    DoubleType,
+    IntegerType,
+    StructType,
+    StructField,
+)
 from pyspark.sql.functions import udf, col, concat, lit
 from spark_apps.data_transformations.embedding_model.sentence_embedding_bert_model import (
     BertSentenceEmbedding,
@@ -27,37 +33,56 @@ def preproccess_textbook(
     dataframe: DataFrame,
     model: SentenceEmbeddingModel = BertSentenceEmbedding(),
 ) -> DataFrame:
+    
+    schema = StructType(
+        [
+            StructField(
+                "embedding_sentence", ArrayType(ArrayType(DoubleType())), False
+            ),
+            StructField("token_sentence", IntegerType(), False),
+        ]
+    )
 
     embed_sentece_udf = udf(
         lambda sentence: model.get_sentence_embedding(sentence),
-        ArrayType(ArrayType(DoubleType())),
+        schema,
     )
 
     dataframe = dataframe.filter(col("value") != "")
     dataframe = transform_metadata(dataframe)
     dataframe = dataframe.withColumnRenamed("value", "sentence")
 
+    
+
     dataframe = dataframe.withColumn(
-        "embedding_sentence", embed_sentece_udf("sentence")
+        "embedding_sentence_object", embed_sentece_udf("sentence")
     )
 
     dataframe = dataframe.withColumn(
-        "embedding_sentence", dataframe["embedding_sentence"].getItem(0)
+        "embedding_sentence",
+        dataframe["embedding_sentence_object"]
+        .getField("embedding_sentence")
+        .getItem(0),
+    ).withColumn(
+        "token_sentence",
+        dataframe["embedding_sentence_object"].getField("token_sentence"),
     )
-    return dataframe.select("sentence", "embedding_sentence", "metadata")
+    return dataframe.select(
+        "sentence", "embedding_sentence", "token_sentence", "metadata"
+    )
 
 
 def run(
     spark: SparkSession, input_dataset_path: str, transformed_dataset_path: str
 ) -> None:
-    input_dataset = spark.read.text(input_dataset_path).select("*", "_metadata")
+    input_dataset = spark.read.text(os.listdir(input_dataset_path) ).select("*", "_metadata")
 
-    input_dataset.cache()
-    input_dataset.show()
+    #input_dataset.cache()
+    #input_dataset.show()
 
     dataset_transformer = preproccess_textbook(spark, input_dataset)
-    dataset_transformer.cache()
-    dataset_transformer.show()
+    #dataset_transformer.cache()
+    #dataset_transformer.show()
 
     ## Write as HUDI
     # hudi_options = {
