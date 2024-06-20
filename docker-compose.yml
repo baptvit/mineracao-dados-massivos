@@ -13,6 +13,9 @@ services:
     environment:
       - SPARK_LOCAL_IP=spark-master
       - SPARK_WORKLOAD=master
+      - SPARK_DRIVER_MEMORY=30G
+      - SPARK_DRIVER_CORES=12
+      - SPARK_WORKER_CORES=12
     networks:
        - network
     deploy:
